@@ -4,4 +4,4 @@
 
 * going back to goodfellow's take on probability, perhaps leverage pytorch to generate some distributions and look at them, and get a hold of mixture models
 
-* if there's time, explore seaborn's object interface
+* some of goodfellow's take on information theory, numerical analysis and machgine learning!
