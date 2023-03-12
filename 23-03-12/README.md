@@ -2,7 +2,7 @@ march 12th, 2023
 
 * divising a better (i.e. parsable) template for this
 * trying out Fig for the command line
-* running through the _Git Book_
+* running through the _Git Book_ iot structure the tool
 * running through _Docker in Action_
 * pin down projects' specs:
   * exploring random number generators
@@ -74,11 +74,13 @@ git, being a file-tracker, when associated with a repo/folder [does] —
   * the basic idea spurs out of a _separation of concerns_: such that
 
     * one can make changes to the same files in multiple directions - e.g., a team developing multiple features in parallel -,
-    * in such a was that they can be merged later whilst safeguarding the conflicts
+    * in such a way that the alterations can be merged later, whilst safeguarding the conflicts
   * when created, a repo implicitly creates a main branch - conventionally called `main` or `master`
-  * on request, it can create multiple other branches (TODO: fill-in)
+  * one can then create any number of branches (TODO: fill-in)
 
 ### basic interface
+
+*a note on vs-code's git interface being so clean and nice*
 
 * handling **repo-specific actions**:
   * `init`:
@@ -88,18 +90,33 @@ git, being a file-tracker, when associated with a repo/folder [does] —
     * make an almost-identical copy of a repository into another folder (including past history of tracked changes)
     * note that I have no idea what this _almost_-identical refers to
 * visualizing **current and historical states**:
-  * `status`:
-    * get the current state:
-      * which branch it is on
-      * miss-match between *local* branch a _remote_ branch
-      * list of `untracked`, `modified`, and `staged` files
-    * with `-s | --short`, one gets a short status... - i.e., only the list of files
-    * note that it ignores files listed in `.gitignore` (which uses standard glob syntax)
-  * `log`
-  * `history`
-  * `diff`:
+  * current:
+    * `status`:
+      * get the current state:
+        * which branch it is on
+        * miss-match between *local* branch a _remote_ branch
+        * list of `untracked`, `modified`, and `staged` files
+      * with `-s | --short`, one gets a short status... - i.e., only the list of files
+      * note that it ignores files listed in `.gitignore` (which uses standard glob syntax)
+  * past:
+    * `log`:
+    * `history`:
+  * comparison (current vs past, local vs remote, branch vs branch):
+    * `diff`:
+      * get the differences between file versions
+      * note that it's really better to use one's IDE directly for this.
 * handling **file-specific actions**:
-  * `add`:
-    * set file(s) as `staged` (be them originally `untracked`, or `modified`)
-    * note that a file may be at the same time `staged` and `modified` (- if some version was `staged` and later `modified`...)
+  * staging:
+    * `add`:
+      * set file(s) as `staged` (be them originally `untracked`, or `modified`)
+      * note that a file may be at the same time `staged` and `modified` (- if some version was `staged` and later `modified`...)
+    * `remove`:
+    * `mv`:
+    * `remove`:
+  *
+  * `commit`:
+  * `push`
+  * `fetch`:
+  * `c`
+  *
   *
