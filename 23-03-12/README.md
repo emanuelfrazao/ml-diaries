@@ -7,6 +7,11 @@ march 12th, 2023
 * pin down projects' specs (perhaps not today - but it's good to dream):
   * exploring random number generators
   * exploring git log statistics
+* note to self that I should start building stuff in rust - to give it a try! - say:
+  * some basic cli's and api's
+  * our random number generators' experiment
+  * some data analysis/"science" projects: a chance to play with polars (it also has some torch bindings)
+  *
 
 # parsable template for ml-diaries
 
