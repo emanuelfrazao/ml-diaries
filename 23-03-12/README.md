@@ -2,9 +2,9 @@ march 12th, 2023
 
 * divising a better (i.e. parsable) template for this
 * trying out Fig for the command line
-* running through the _Git Book_ iot structure the tool
-* running through _Docker in Action_
-* pin down projects' specs:
+* running through the _Pro Git_ iot figure out some principles behind the tool
+* running through _Docker in Action_ to finally get that b****'s internals!
+* pin down projects' specs (perhaps not today - but it's good to dream):
   * exploring random number generators
   * exploring git log statistics
 
@@ -14,13 +14,12 @@ looking at the previous days - there's really no point in writing stuff directly
 
 so — new template specs:
 
-* every day is a folder - named clearly after the name
+* every day is a folder - named clearly after the day
 * every day contains a README.md
   * every topic is listed and then covered in README.md
 * if a topic is explored with code,
   * then the corresponding code is to be placed in a [corresp.] named folder
-  * the folder may contain a Makefile for easily running the experiments
-  *
+  * the folder may contain a Makefile for easilys running the experiments - but I guess no need - couldn't we find an easier way? templating cli's and setuptools, or something
 
 and we guess that's it...
 
@@ -37,17 +36,21 @@ it integrates with argparse and click for python - or so they say - example in `
 
 it allows one to easily create scripts... hum
 
-temporarily porting all aliases and simple scripts there - it has a nice interface (with some very limited debugging and editing capabilities - but still, it gives a lot of functionality out of the box: easy cli's )
+temporarily porting all aliases and simple scripts there - it has a nice interface (with some very limited debugging and editing capabilities - but still, guess I'm enjoying seeing them in a GUI)
 
 it lacks some transparency for me atm, but hey!
 
-# git book
+# pro git book
 
 ## some general takes
 
-regarding the book, it seems very well structured, and freely online - I don't remember it being so nice for me some years ago - so I guess it lacked some better motivation/contextualization (wrt git mentions on the public arena! - namely, disambiguating the references to github), but that's not on them. I guess for arbitrary-background-newcomers, one stress the motivation behind tracking versions (as say, by referencing Word), and then move to collaboration.
+regarding the book, it seems very well structured, and it is free - I don't remember it being so nice for me some years ago - so I guess it lacks some better motivation/contextualization (wrt git mentions on the public arena! - namely, disambiguating the references to github), but that's not on them - in other words: I lacked the maturity to appreciate the problem it was trying to solve. I guess for arbitrary-background-newcomers, one may stress the motivation behind tracking versions (as say, by referencing Word), and then move to stressing collaboration - in a how-would-one fashion.
 
-the last chapter on git internals must be fun. other than that, the book takes an organized (as expected) approach: some basics, some specifics on branching, some specifics on communication protocols for git - and custom aswell as known providers -, some advanced git tooling, some sugar, and some internals (which we long for!) - from a high-level view, it seems pretty well covered.
+the last chapter on git internals must be fun - meanwhile 'took a look, and it is indeed fun: he goes into what he calls _plumbing_, the low-level API - the rest of the book being about _porcelain_, the high-level API.
+
+they do not go much in-depth into the _plumbing_, but they do give some picture of the (what I'd take to be the) main-sufficient functionalities for building the high-level functionality one uses normally. in the meanwhile, one gets some intuition on how git stores and manages the information - which would be useful to debug it, one guesses. plus, they describe give a syntethic view of the main objects git manages: blobs, trees, commits, and tags.
+
+other than that, the book takes an organized (as expected) approach: some basics, some specifics on branching, some specifics on communication protocols for git - custom aswell as known providers -, some best practices for cooperating with multiple agents on small to big projects, some advanced git tooling, some sugar, and some internals (which we long for!) - from a high-level view, it seems pretty well covered.
 
 it seems like it will be a good book for reference.
 
@@ -55,13 +58,13 @@ they wouldn't say yet, but apparently git is written in a host of languages: sub
 
 so - git is special with regards to perforce (and the like), in that: it makes use of distributed repos, not centralized; it uses (optimized) snapshot version control, not delta.
 
-what would be the consequences of these options? - we'll see!
+what would be the consequences of these options? - we'll see if we get to understand (!)
 
 ## git basics
 
-git, being a file-tracker, when associated with a repo/folder [does] —
+some structuring of git
 
-### high-view
+### basic high-view
 
 * every file in the folder is in one of two self-descriptive states:
   * `untracked` - the default
@@ -73,12 +76,19 @@ git, being a file-tracker, when associated with a repo/folder [does] —
 * the repo is organized (implicitly or explicitly) in branches:
   * the basic idea spurs out of a _separation of concerns_: such that
 
-    * one can make changes to the same files in multiple directions - e.g., a team developing multiple features in parallel -,
+    * one can make changes to the same files' version(s) in multiple directions - e.g., a team developing multiple features in parallel -,
     * in such a way that the alterations can be merged later, whilst safeguarding the conflicts
   * when created, a repo implicitly creates a main branch - conventionally called `main` or `master`
-  * one can then create any number of branches (TODO: fill-in)
+  * one can then create any number of branches afterwards (e.g., one per feature, one per problem to be fixed, one per developer) (TODO: fill-in)
+  * so, one can imagine that each branch may be regarded as a repo - or can't one?
+* furthermore, git provides a communication protocol between repositories following a local-remote logic:
+  * `local` refers to one [developer]'s local repository (to make it very circular)
+  * `remote` refers to a central/intermediate repository (even if in one's machine - but usually on some internet-accessible server) through which many ones [developers] may cooperate (i.e., read-write)
+  * the 2 agents behave with different and complementary interfaces
+  * their mode of interaction is many-to-many:
+    * a `local` repo may have multiple `remote` ones, and a `remote` - by serving as an intermediary repo - obsiously serves multiple `local` ones
 
-### basic interface
+### basic high-level interface (aka porcelain)
 
 *a note on vs-code's git interface being so clean and nice*
 
@@ -100,23 +110,74 @@ git, being a file-tracker, when associated with a repo/folder [does] —
       * note that it ignores files listed in `.gitignore` (which uses standard glob syntax)
   * past:
     * `log`:
-    * `history`:
+      * get commit history [in reverse chron. order]:
+
+        * for each commit, by default, one gets the SHA code, the author, the date, and the commit message
+      * one can filter the output with:
+
+        * `-<n>`, for limiting the number of commits shown (by `n`)
+        * `--since=<date>` and `--until=<date>`
+        * `--author=<name>` for filtering on the author
+        * `--grep=<pattern>` for filtering on the pattern
+      * with `--patch | -p`, one can also see the differences for each file commited
+      * with `--stat`, one can get some statistics on the number of changes per file commited
+      * with `--pretty`, one can format the log strings for each commit:
+
+        * `--pretty=oneline` for a single line with (SHA, msg)
+        * `--pretty=format:<format>` for formatting the log at will - e.g.: `--pretty=format:"%h - %an, %ar : %s"` - with specifiers:
+
+          * `%H` : commit hash
+          * `%h` : abbrv. commit hash
+          * `%s` : subject / message
+          * ...
+          * `%an`: author name
+          * `%ae`: author email
+          * `%ad`: author date
+          * `%ar`: author relative date
+          * `%cn`: commiter name
+          * `%ce`: commiter email
+          * `%cd`: commiter date
+          * `%cr`: commiter relative date
+      * with `-S <string>` one can search for commits where string is contained in the newly added file's name, or any new lines
+      * with `-- <path>` (notice the black space), one can ask for the history on a specific folder location
   * comparison (current vs past, local vs remote, branch vs branch):
     * `diff`:
       * get the differences between file versions
       * note that it's really better to use one's IDE directly for this.
 * handling **file-specific actions**:
-  * staging:
+  * staging alterations, additions, and removals:
+
     * `add`:
+
       * set file(s) as `staged` (be them originally `untracked`, or `modified`)
       * note that a file may be at the same time `staged` and `modified` (- if some version was `staged` and later `modified`...)
-    * `remove`:
+    * `rm`:
+
+      * remove the file as with shell's `rm`, with the extra feature of already placing the file deletion as a staged action
+      * with `--cached <file>`, it does not remove the actual file - just removes it from staging area
     * `mv`:
-    * `remove`:
-  *
-  * `commit`:
-  * `push`
-  * `fetch`:
-  * `c`
-  *
-  *
+
+      * rename a file
+      * note that git does not keep track of actual file movements (whatever this means)
+  * saving staged actions:
+
+    * `commit`:
+      * save staged actions...
+      * specify `-m <msg>` or let some tool prompt you with a way to specify a message - _one should_ always do it - thou shalt!
+      * with `--amend <file>`, one can add another file change/add to the previous commit
+  * undoing stuff:
+* handling **local-remote communication**:
+  * `remote`:
+    * manage `remote` repo from `local` - it is a command with many sub-commands/actions:
+      * by itself (and with `-v` for verbose), it lists the `remote` repos associated, with their name (and ref)
+      * `show`:
+        * get some general info on sync state between `local` and `remote`
+      * `add`, `rm`, `rename`:
+        * add, remove, or rename `remote` repo
+      * `get-url`, `set-url`:
+        * get-set url to `remote` repo
+      * etc (some func. on remote head branch, and tracking remote branches)
+  * `push`:
+  * `pull`:
+* handling **branches**:
+* handling **configuration settings**:
