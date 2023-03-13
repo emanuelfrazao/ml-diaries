@@ -78,15 +78,29 @@ some structuring of git
 
     * one can make changes to the same files' version(s) in multiple directions - e.g., a team developing multiple features in parallel -,
     * in such a way that the alterations can be merged later, whilst safeguarding the conflicts
-  * when created, a repo implicitly creates a main branch - conventionally called `main` or `master`
+  * when a repo is created, git automatically creates a branch (- conventionally called `main` or `master` -) and sets it as default
   * one can then create any number of branches afterwards (e.g., one per feature, one per problem to be fixed, one per developer) (TODO: fill-in)
-  * so, one can imagine that each branch may be regarded as a repo - or can't one?
+  * (so, one can imagine that each branch may be regarded as a repo - or can't one?)
 * furthermore, git provides a communication protocol between repositories following a local-remote logic:
   * `local` refers to one [developer]'s local repository (to make it very circular)
-  * `remote` refers to a central/intermediate repository (even if in one's machine - but usually on some internet-accessible server) through which many ones [developers] may cooperate (i.e., read-write)
+  * `remote` refers to an intermediate (say, more than a "central" one) repository (even if in one's machine - but usually on some internet-accessible server) through which many ones [developers] may cooperate (i.e., read-write)
   * the 2 agents behave with different and complementary interfaces
   * their mode of interaction is many-to-many:
     * a `local` repo may have multiple `remote` ones, and a `remote` - by serving as an intermediary repo - obsiously serves multiple `local` ones
+* there are some important notes with regards to how git **stores data**:
+  * git stores data as a  series of snapshots - that may actually be equated to a hyper-tree-like structure of dependencies
+  * a commit node contains pointers to:
+    * commit info:
+      * the snapshot of the staged content (to be committed)
+      * it's author's name and email
+      * the message
+      * the SHA code
+    * commit parents, such that:
+      * the initial commit has no parent (is the root)
+      * a _normal_ commit (within repo/branch) has a single parent (the previous commit node)
+      * a _branch/repo merging_ commit has multiple parents (the previous commit nodes that it's merging)
+  * each committed snapshot is also stored as a tree following the directory structure (files are stored in so-called _blobs_)
+* banking on that, when branching - under the hood - git _simply_ creates a (lightweight) pointer to a commit node
 
 ### basic high-level interface (aka porcelain)
 
@@ -146,29 +160,29 @@ some structuring of git
       * note that it's really better to use one's IDE directly for this.
 * handling **file-specific actions**:
   * staging alterations, additions, and removals:
-
     * `add`:
-
       * set file(s) as `staged` (be them originally `untracked`, or `modified`)
       * note that a file may be at the same time `staged` and `modified` (- if some version was `staged` and later `modified`...)
     * `rm`:
-
       * remove the file as with shell's `rm`, with the extra feature of already placing the file deletion as a staged action
       * with `--cached <file>`, it does not remove the actual file - just removes it from staging area
     * `mv`:
-
       * rename a file
       * note that git does not keep track of actual file movements (whatever this means)
   * saving staged actions:
-
     * `commit`:
       * save staged actions...
       * specify `-m <msg>` or let some tool prompt you with a way to specify a message - _one should_ always do it - thou shalt!
       * with `--amend <file>`, one can add another file change/add to the previous commit
   * undoing stuff:
+    * `rebase`:
+    * `reset`:
+  * tagging _nodes_:
+    * `tag`:
+      * manage tags: create, list, delete, and verify tags - for software versions, mostly (for one day)
 * handling **local-remote communication**:
   * `remote`:
-    * manage `remote` repo from `local` - it is a command with many sub-commands/actions:
+    * manage `remote` repos from `local` - it is a command with many sub-commands/actions:
       * by itself (and with `-v` for verbose), it lists the `remote` repos associated, with their name (and ref)
       * `show`:
         * get some general info on sync state between `local` and `remote`
@@ -178,6 +192,17 @@ some structuring of git
         * get-set url to `remote` repo
       * etc (some func. on remote head branch, and tracking remote branches)
   * `push`:
+    * update `remote` repo with `local` contents
+    * with `-d`, delete a remote branch/ref
   * `pull`:
+    * update `local` repo with `remote`/other contents
 * handling **branches**:
+  * `branch`:
+    * manage local branches: list , create, remove (`--delete | -d`)
+      * `git branch <name> [commit ref]` to create a branch from last commit, or some referenced one
+      * `git branch <name> <remote>:<branch>` to create a local branch from a remote one
+    * with `--remotes | -r`, list remote branches
+  * `checkout`:
+    * change current branch
+    * with `-b`, create a new branch and switch [current branch] to it
 * handling **configuration settings**:
